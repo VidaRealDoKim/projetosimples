@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,18 +13,30 @@ class _LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
   bool isLoading = false;
 
+  // Função para realizar login usando Supabase Auth
   Future<void> _login() async {
     setState(() => isLoading = true);
-    try {
-      final response = await Supabase.instance.client.auth.signInWithPassword(
-        email: emailController.text,
-        password: passwordController.text,
+
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha email e senha')),
       );
-      if (response.session != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardPage()),
-        );
+      setState(() => isLoading = false);
+      return;
+    }
+
+    try {
+      final res = await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (res.session != null) {
+        // Login OK, vai para dashboard
+        Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Falha no login')),
@@ -36,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(content: Text('Erro: $e')),
       );
     }
+
     setState(() => isLoading = false);
   }
 
@@ -47,14 +59,41 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-            TextField(controller: passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Senha')),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: 'Senha'),
+              obscureText: true,
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: isLoading ? null : _login,
               child: isLoading
-                  ? const CircularProgressIndicator()
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : const Text('Entrar'),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Link para esqueci senha (pode ser implementado)
+            TextButton(
+              onPressed: () {
+                // Pode implementar reset senha aqui
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Funcionalidade em breve')),
+                );
+              },
+              child: const Text('Esqueci minha senha'),
+            ),
+
+            // Link para criar conta
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/register'),
+              child: const Text('Criar conta'),
             ),
           ],
         ),

@@ -10,4 +10,3 @@ Sistema simples de reservas de salas feito com **Flutter** + **Supabase**.
 - Criação de reservas com verificação de conflito
 - Listagem das reservas do usuário
 - Logout
-
